@@ -36,7 +36,12 @@ public class ExpenseDL extends DataLayer {
         ps.setInt(1, expense.getExpenseID());
 
         ResultSet expenseR = ps.executeQuery();
-        e = resultSetToEntity(expenseR).get(0);
+
+        if (resultSetToEntity(expenseR).size() > 0) {
+            e = resultSetToEntity(expenseR).get(0);
+        } else {
+            throw new SQLException();
+        }
 
         return e;
     }

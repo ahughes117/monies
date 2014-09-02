@@ -1,8 +1,15 @@
 package gui;
 
+import datalayers.ExpenseDL;
+import entities.Expense;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sql.Connector;
+import util.MesDial;
 
 /**
  * The Expense Frame of the application
@@ -11,25 +18,137 @@ import sql.Connector;
  */
 public class ExpenseFrame extends GUI {
 
+    private static boolean instanceAlive = false;
+    private Expense expense;
+    private ExpenseDL expenseDL;
+
     /**
      * Creates a new ExpenseFrame
-     * 
+     *
      * @param aPFrame
-     * @param aConnector 
+     * @param aConnector
      * @param anExpenseID
      */
     public ExpenseFrame(GUI aPFrame, Connector aConnector, int anExpenseID) {
         super(aPFrame, aConnector, anExpenseID);
+        instanceAlive = true;
 
         initComponents();
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
+                instanceAlive = false;
                 shutdown();
             }
         });
 
+        if (existing) {
+            loadExpense();
+        } else {
+            statusL.setText("New Expense");
+        }
+
         super.setFrameLocationCenter();
         this.setVisible(true);
+    }
+
+    /**
+     * Loads an expense on the form
+     */
+    private void loadExpense() {
+        expense = new Expense(super.id);
+        expenseDL = new ExpenseDL(c, expense);
+
+        //trying to fetch the expense
+        try {
+            expense = (Expense) expenseDL.fetchEntity();
+        } catch (SQLException ex) {
+            MesDial.loadExpenseError(this);
+            shutdown();
+            Logger.getLogger(ExpenseFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //loading the items on the screen
+        expenseIDF.setText(String.valueOf(expense.getExpenseID()));
+        amountF.setText(moneyFormat.format(expense.getAmount()));
+        dateF.setText(dateFormat.format(expense.getDate()));
+        descriptionArea.setText(expense.getDescription());
+        statusL.setText("Expense Loaded");
+    }
+
+    /**
+     * Function that checks if another window is open
+     *
+     * @return
+     */
+    public static boolean isInstanceAlive() {
+        return instanceAlive;
+    }
+
+    /**
+     * Inserts / updates an expense in the DB
+     */
+    private void saveExpense() {
+        boolean parsingSuccessful = parseExpense();
+
+        if (parsingSuccessful) {
+            expenseDL = new ExpenseDL(c, expense);
+            try {
+                if (!existing) {
+                    expenseDL.insertEntity();
+                } else {
+                    expenseDL.updateEntity();
+                }
+                MesDial.saveSuccess(this);
+            } catch (SQLException ex) {
+                MesDial.conError(this);
+                Logger.getLogger(ExpenseFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
+    /**
+     * Parses the expense fields into the expense object
+     *
+     * @return
+     */
+    private boolean parseExpense() {
+        boolean parsingSuccessful = true;
+        double amount = -1;
+        java.sql.Date dateSql = null;
+        java.util.Date dateUtil;
+        String dateS, description;
+
+        //attempting to parse the amount
+        try {
+            amount = Double.parseDouble(amountF.getText());
+        } catch (Exception x) {
+            MesDial.doubleError(this);
+            parsingSuccessful = false;
+            Logger.getLogger(ExpenseFrame.class.getName()).log(Level.SEVERE, null, x);
+        }
+
+        //attempting to parse the date
+        try {
+            dateS = dateF.getText();
+            dateS = dateS.trim();
+            dateUtil = dateFormat.parse(dateS);
+            dateSql = new java.sql.Date(dateUtil.getTime());
+        } catch (ParseException x) {
+            MesDial.dateError(this);
+            parsingSuccessful = false;
+            Logger.getLogger(ExpenseFrame.class.getName()).log(Level.SEVERE, null, x);
+        }
+
+        //finally fetching the description
+        description = descriptionArea.getText();
+
+        //creating the expense object
+        if (parsingSuccessful) {
+            expense = new Expense(id, amount, description, dateSql);
+        }
+
+        return parsingSuccessful;
     }
 
     /**
@@ -48,9 +167,9 @@ public class ExpenseFrame extends GUI {
         expenseIDF = new javax.swing.JTextField();
         amountF = new javax.swing.JTextField();
         dateF = new javax.swing.JTextField();
-        descriptionF = new javax.swing.JPanel();
+        descriptionPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        descriptionArea = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         statusL = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
@@ -70,20 +189,20 @@ public class ExpenseFrame extends GUI {
 
         expenseIDF.setEditable(false);
 
-        descriptionF.setBorder(javax.swing.BorderFactory.createTitledBorder("Description"));
+        descriptionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Description"));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        descriptionArea.setColumns(20);
+        descriptionArea.setRows(5);
+        jScrollPane1.setViewportView(descriptionArea);
 
-        javax.swing.GroupLayout descriptionFLayout = new javax.swing.GroupLayout(descriptionF);
-        descriptionF.setLayout(descriptionFLayout);
-        descriptionFLayout.setHorizontalGroup(
-            descriptionFLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
+        descriptionPanel.setLayout(descriptionPanelLayout);
+        descriptionPanelLayout.setHorizontalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1)
         );
-        descriptionFLayout.setVerticalGroup(
-            descriptionFLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        descriptionPanelLayout.setVerticalGroup(
+            descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1)
         );
 
@@ -112,7 +231,7 @@ public class ExpenseFrame extends GUI {
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(descriptionF, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -131,7 +250,7 @@ public class ExpenseFrame extends GUI {
                     .addComponent(jLabel5)
                     .addComponent(dateF, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(descriptionF, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -160,6 +279,11 @@ public class ExpenseFrame extends GUI {
         backButton.setText("<Back");
 
         saveButton.setText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -209,11 +333,16 @@ public class ExpenseFrame extends GUI {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        saveExpense();
+    }//GEN-LAST:event_saveButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField amountF;
     private javax.swing.JButton backButton;
     private javax.swing.JTextField dateF;
-    private javax.swing.JPanel descriptionF;
+    private javax.swing.JTextArea descriptionArea;
+    private javax.swing.JPanel descriptionPanel;
     private javax.swing.JTextField expenseIDF;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -222,7 +351,6 @@ public class ExpenseFrame extends GUI {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel statusL;
     // End of variables declaration//GEN-END:variables

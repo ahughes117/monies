@@ -41,6 +41,7 @@ public class MesDial {
     private static String doubleError = "Please, enter a valid decimal number. (1.17)";
     private static String tagExistsError = "This tag already exists.";
     private static String categoryError = "You have to choose a category.";
+    private static String loadExpenseError = "Error while trying to load expense";
     
     //
     private static String deleteQuestion = "Delete?";
@@ -212,5 +213,9 @@ public class MesDial {
     
     public static void categoryError(GUI aFrame) {
         JOptionPane.showMessageDialog(aFrame, categoryError, "Error!", JOptionPane.ERROR_MESSAGE);
+    }
+    
+    public static void loadExpenseError(GUI aFrame) {
+        JOptionPane.showMessageDialog(aFrame, loadExpenseError, "Error!", JOptionPane.ERROR_MESSAGE);
     }
 }

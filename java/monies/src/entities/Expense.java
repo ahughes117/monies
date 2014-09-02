@@ -50,6 +50,15 @@ public class Expense extends Entity {
         this.description = description;
         this.date = date;
     }
+    
+    /**
+     * Constructor for setting the expenseID in order to fetch it
+     * 
+     * @param expenseID 
+     */
+    public Expense(int expenseID) {
+        this.expenseID = expenseID;
+    }
 
     public int getExpenseID() {
         return expenseID;

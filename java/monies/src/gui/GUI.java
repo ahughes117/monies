@@ -1,40 +1,42 @@
-
 package gui;
 
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import sql.Connector;
 
 /**
  * The abstract GUI class for the frames.
- * 
+ *
  * @author Alex Hughes
  */
 public abstract class GUI extends JFrame {
-    
+
     protected GUI pFrame;
     protected Connector c;
     protected int id;
     protected static final int NIL = -1;
     protected boolean existing;
-    
+    protected DecimalFormat moneyFormat = new DecimalFormat("#.##");
+    protected SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
     public GUI() {
-        
+
     }
-    
+
     public GUI(GUI aPreviousFrame, Connector aConnector, int anID) {
         pFrame = aPreviousFrame;
         c = aConnector;
         id = anID;
-        
+
         if (anID == this.NIL) {
             existing = false;
         } else {
             existing = true;
         }
     }
-    
 
     public void setFrameLocationCenter() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -45,13 +47,13 @@ public abstract class GUI extends JFrame {
 
         this.setLocation(windowX, windowY);
     }
-    
+
     protected void shutdown() {
         pFrame.setVisible(true);
         this.dispose();
     }
-    
- public void popupMenuField(JTextField aTf) {
+
+    public void popupMenuField(JTextField aTf) {
 
         JPopupMenu popupMenu = new JPopupMenu();
         ActionListener actionListener = new PopupActionListener(aTf);
@@ -69,7 +71,7 @@ public abstract class GUI extends JFrame {
         popupMenu.add(pasteMenuItem);
 
         aTf.setComponentPopupMenu(popupMenu);
-        
+
     }
 
     public void popupMenuArea(JTextArea aTa) {
@@ -92,6 +94,7 @@ public abstract class GUI extends JFrame {
         aTa.setComponentPopupMenu(popupMenu);
     }
 }
+
 class PopupActionListener implements ActionListener {
 
     private JTextField tf;
@@ -129,4 +132,3 @@ class PopupActionListener implements ActionListener {
         }
     }
 }
-
