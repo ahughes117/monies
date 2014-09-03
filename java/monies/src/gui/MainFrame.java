@@ -45,8 +45,6 @@ public class MainFrame extends GUI {
                 shutdown();
             }
         });
-        Date curDate = new Date();
-        statusL.setText("Expenses Loaded - " + curDate.toString());
 
         super.setFrameLocationCenter();
         this.setVisible(true);
@@ -67,7 +65,7 @@ public class MainFrame extends GUI {
             list = weekList;
         } else if (tabbedPane.getSelectedIndex() == MONTH) {
             list = monthList;
-        } else if(tabbedPane.getSelectedIndex() == ALL) {
+        } else if (tabbedPane.getSelectedIndex() == ALL) {
             list = allList;
         }
 
@@ -94,7 +92,7 @@ public class MainFrame extends GUI {
             interval = "week";
         } else if (tabbedPane.getSelectedIndex() == MONTH) {
             interval = "month";
-        } else if(tabbedPane.getSelectedIndex() == ALL) {
+        } else if (tabbedPane.getSelectedIndex() == ALL) {
             interval = "all";
         }
 
@@ -104,13 +102,14 @@ public class MainFrame extends GUI {
             if (interval.equals("day")) {
                 ListUtil.fillList(expenses, dayList);
             } else if (interval.equals("week")) {
-                System.out.println("week list");
                 ListUtil.fillList(expenses, weekList);
             } else if (interval.equals("month")) {
                 ListUtil.fillList(expenses, monthList);
-            } else if(interval.equals("all")) {
+            } else if (interval.equals("all")) {
                 ListUtil.fillList(expenses, allList);
             }
+            Date curDate = new Date();
+            statusL.setText("Expenses Loaded - " + curDate.toString());
 
         } catch (SQLException ex) {
             MesDial.conError(this);
@@ -389,7 +388,6 @@ public class MainFrame extends GUI {
 
     private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
         loadExpenseList();
-        System.out.println("state changed: " + tabbedPane.getSelectedIndex());
     }//GEN-LAST:event_tabbedPaneStateChanged
 
 
