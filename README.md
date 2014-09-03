@@ -7,4 +7,4 @@ To use it, download the Monies.jarr file from downloads, rename it to Monies.jar
 
 I would love to hear your ideas in order to add features to it.
 
-As long as I gather some data, I will try to add sums and graphs and fancy stuff like that.
+As soon as I gather some data, I will try to add sums and graphs and fancy stuff like that.
