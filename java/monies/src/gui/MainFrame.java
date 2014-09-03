@@ -26,8 +26,9 @@ public class MainFrame extends GUI {
 
     private ExpenseDL expenseDL;
     private static final int DAY = 0;
-    private static final int MONTH = 1;
-    private static final int WEEK = 2;
+    private static final int WEEK = 1;
+    private static final int MONTH = 2;
+    private static final int ALL = 3;
 
     /**
      * Creates a new Main Frame
@@ -44,7 +45,6 @@ public class MainFrame extends GUI {
                 shutdown();
             }
         });
-        loadExpenseList();
         Date curDate = new Date();
         statusL.setText("Expenses Loaded - " + curDate.toString());
 
@@ -67,6 +67,8 @@ public class MainFrame extends GUI {
             list = weekList;
         } else if (tabbedPane.getSelectedIndex() == MONTH) {
             list = monthList;
+        } else if(tabbedPane.getSelectedIndex() == ALL) {
+            list = allList;
         }
 
         if (list != null && list.getSelectedIndex() != NIL) {
@@ -92,6 +94,8 @@ public class MainFrame extends GUI {
             interval = "week";
         } else if (tabbedPane.getSelectedIndex() == MONTH) {
             interval = "month";
+        } else if(tabbedPane.getSelectedIndex() == ALL) {
+            interval = "all";
         }
 
         try {
@@ -100,9 +104,12 @@ public class MainFrame extends GUI {
             if (interval.equals("day")) {
                 ListUtil.fillList(expenses, dayList);
             } else if (interval.equals("week")) {
+                System.out.println("week list");
                 ListUtil.fillList(expenses, weekList);
             } else if (interval.equals("month")) {
                 ListUtil.fillList(expenses, monthList);
+            } else if(interval.equals("all")) {
+                ListUtil.fillList(expenses, allList);
             }
 
         } catch (SQLException ex) {
@@ -137,6 +144,9 @@ public class MainFrame extends GUI {
         jPanel5 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         monthList = new javax.swing.JList();
+        jPanel6 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        allList = new javax.swing.JList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Monies Alpha");
@@ -217,6 +227,11 @@ public class MainFrame extends GUI {
         );
 
         tabbedPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Monies"));
+        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tabbedPaneStateChanged(evt);
+            }
+        });
 
         dayList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(dayList);
@@ -284,6 +299,32 @@ public class MainFrame extends GUI {
 
         tabbedPane.addTab("This Month", jPanel5);
 
+        allList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(allList);
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        tabbedPane.addTab("All", jPanel6);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -346,8 +387,14 @@ public class MainFrame extends GUI {
         shutdown();
     }//GEN-LAST:event_quitBtnActionPerformed
 
+    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
+        loadExpenseList();
+        System.out.println("state changed: " + tabbedPane.getSelectedIndex());
+    }//GEN-LAST:event_tabbedPaneStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList allList;
     private javax.swing.JList dayList;
     private javax.swing.JButton deleteBtn;
     private javax.swing.JPanel jPanel1;
@@ -355,9 +402,11 @@ public class MainFrame extends GUI {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JList monthList;
     private javax.swing.JButton newBtn;
     private javax.swing.JButton quitBtn;

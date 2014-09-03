@@ -38,7 +38,7 @@ public class ExpenseDL extends DataLayer {
         ResultSet expenseR = ps.executeQuery();
 
         entities = resultSetToEntity(expenseR);
-        
+
         if (entities.size() > 0) {
             e = entities.get(0);
         } else {
@@ -60,18 +60,20 @@ public class ExpenseDL extends DataLayer {
 
         String whereS = "";
         if (anInterval.equals("day")) {
-            whereS = "DATE(DateCreated) = CURDATE() ";
+            whereS = "DATE(Date) = CURDATE() ";
         } else if (anInterval.equals("week")) {
-            whereS = "WEEKOFYEAR(DateCreated) = WEEKOFYEAR(NOW()) AND DateCreated > CURRENT_TIMESTAMP - INTERVAL 2 WEEK ";
+            whereS = "WEEKOFYEAR(Date) = WEEKOFYEAR(NOW()) AND Date > CURRENT_TIMESTAMP - INTERVAL 2 WEEK ";
         } else if (anInterval.equals("month")) {
-            whereS = "MONTHNAME(DateCreated) = MONTHNAME(NOW()) AND DateCreated > CURRENT_TIMESTAMP - INTERVAL 1 MONTH ";
+            whereS = "MONTHNAME(Date) = MONTHNAME(NOW()) AND Date > CURRENT_TIMESTAMP - INTERVAL 1 MONTH ";
+        } else if (anInterval.equals("all")) {
+            whereS = "1=1 ";
         }
 
         String query = ""
                 + "SELECT * "
                 + "FROM expense "
                 + "WHERE " + whereS
-                + "ORDER BY DateCreated ASC ";
+                + "ORDER BY Date ASC ";
 
         ResultSet entityR = c.sendQuery(query);
         entities = resultSetToEntity(entityR);
