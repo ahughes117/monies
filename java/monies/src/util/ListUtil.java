@@ -25,7 +25,7 @@ public class ListUtil {
             //casting and adding items
             if (ent instanceof Expense) {
                 Expense e = (Expense) ent;
-                items.add(e.getExpenseID() + ", " + e.getAmount() + " " + e.getDescription() + " " + e.getDate());
+                items.add(e.getExpenseID() + ", " + e.getAmount() + " - " + e.getDescription() + " || " + e.getDate());
             }
         }
 

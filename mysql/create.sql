@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `expense` ;
 
 CREATE TABLE IF NOT EXISTS `expense` (
   `expenseID` INT NOT NULL AUTO_INCREMENT,
-  `Amount` DECIMAL NOT NULL,
+  `Amount` DECIMAL(10,2) NOT NULL,
   `Description` TEXT NOT NULL,
   `Date` DATE NOT NULL,
   `DateCreated` TIMESTAMP NULL,

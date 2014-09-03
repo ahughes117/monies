@@ -182,12 +182,11 @@ public class StrUtil {
     public static int parseIdFromString(String aString) {
         int id = -1;
         
-        Pattern intPattern = Pattern.compile("\\d++");
+        Pattern intPattern = Pattern.compile("\\d+");
         Matcher intMatcher = intPattern.matcher(aString);
         
-        while(intMatcher.find()){
-            id = Integer.parseInt(intMatcher.group());
-        }
+        intMatcher.find();
+        id = Integer.parseInt(intMatcher.group());
         
         return id;
     }

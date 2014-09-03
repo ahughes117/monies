@@ -1,8 +1,21 @@
 package gui;
 
+import datalayers.ExpenseDL;
+import entities.Entity;
+import entities.Expense;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import sql.Connector;
+import util.ListUtil;
+import util.MesDial;
+import util.StrUtil;
 
 /**
  * The Expense Frame of the application
@@ -10,6 +23,11 @@ import sql.Connector;
  * @author ahughes
  */
 public class MainFrame extends GUI {
+
+    private ExpenseDL expenseDL;
+    private static final int DAY = 0;
+    private static final int MONTH = 1;
+    private static final int WEEK = 2;
 
     /**
      * Creates a new Main Frame
@@ -26,9 +44,71 @@ public class MainFrame extends GUI {
                 shutdown();
             }
         });
+        loadExpenseList();
+        Date curDate = new Date();
+        statusL.setText("Expenses Loaded - " + curDate.toString());
 
         super.setFrameLocationCenter();
         this.setVisible(true);
+    }
+
+    /**
+     * Parses and returns a selected expenseID from the expense list
+     *
+     * @return
+     */
+    private int parseExpenseID() {
+        int expenseID = NIL;
+        JList list = null;
+
+        if (tabbedPane.getSelectedIndex() == DAY) {
+            list = dayList;
+        } else if (tabbedPane.getSelectedIndex() == WEEK) {
+            list = weekList;
+        } else if (tabbedPane.getSelectedIndex() == MONTH) {
+            list = monthList;
+        }
+
+        if (list != null && list.getSelectedIndex() != NIL) {
+            expenseID = StrUtil.parseIdFromString((String) list.getSelectedValue());
+        } else {
+            MesDial.noRowSelected(this);
+        }
+
+        return expenseID;
+    }
+
+    /**
+     * Loads the expenses for a given interval (day, week, month)
+     */
+    public void loadExpenseList() {
+        ArrayList<Entity> expenses;
+        String interval = "day";
+        expenseDL = new ExpenseDL(c);
+
+        if (tabbedPane.getSelectedIndex() == DAY) {
+            interval = "day";
+        } else if (tabbedPane.getSelectedIndex() == WEEK) {
+            interval = "week";
+        } else if (tabbedPane.getSelectedIndex() == MONTH) {
+            interval = "month";
+        }
+
+        try {
+            expenses = expenseDL.fetchIntervalItems(interval);
+
+            if (interval.equals("day")) {
+                ListUtil.fillList(expenses, dayList);
+            } else if (interval.equals("week")) {
+                ListUtil.fillList(expenses, weekList);
+            } else if (interval.equals("month")) {
+                ListUtil.fillList(expenses, monthList);
+            }
+
+        } catch (SQLException ex) {
+            MesDial.conError(this);
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -47,7 +127,7 @@ public class MainFrame extends GUI {
         newBtn = new javax.swing.JButton();
         updateBtn = new javax.swing.JButton();
         deleteBtn = new javax.swing.JButton();
-        jTabbedPane2 = new javax.swing.JTabbedPane();
+        tabbedPane = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         dayList = new javax.swing.JList();
@@ -82,12 +162,32 @@ public class MainFrame extends GUI {
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         quitBtn.setText("<Quit");
+        quitBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                quitBtnActionPerformed(evt);
+            }
+        });
 
         newBtn.setText("New");
+        newBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newBtnActionPerformed(evt);
+            }
+        });
 
-        updateBtn.setText("Update");
+        updateBtn.setText("Edit");
+        updateBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateBtnActionPerformed(evt);
+            }
+        });
 
         deleteBtn.setText("Delete");
+        deleteBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -116,8 +216,9 @@ public class MainFrame extends GUI {
                 .addContainerGap(13, Short.MAX_VALUE))
         );
 
-        jTabbedPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Monies"));
+        tabbedPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Monies"));
 
+        dayList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(dayList);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -137,8 +238,9 @@ public class MainFrame extends GUI {
                 .addContainerGap())
         );
 
-        jTabbedPane2.addTab("Today", jPanel1);
+        tabbedPane.addTab("Today", jPanel1);
 
+        weekList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(weekList);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -158,8 +260,9 @@ public class MainFrame extends GUI {
                 .addContainerGap())
         );
 
-        jTabbedPane2.addTab("This Week", jPanel4);
+        tabbedPane.addTab("This Week", jPanel4);
 
+        monthList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane3.setViewportView(monthList);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -179,7 +282,7 @@ public class MainFrame extends GUI {
                 .addContainerGap())
         );
 
-        jTabbedPane2.addTab("This Month", jPanel5);
+        tabbedPane.addTab("This Month", jPanel5);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -188,7 +291,7 @@ public class MainFrame extends GUI {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jTabbedPane2)
+                    .addComponent(tabbedPane)
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -197,7 +300,7 @@ public class MainFrame extends GUI {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane2)
+                .addComponent(tabbedPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -207,6 +310,41 @@ public class MainFrame extends GUI {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void newBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
+        if (!ExpenseFrame.isInstanceAlive()) {
+            new ExpenseFrame(this, c, NIL);
+        }
+    }//GEN-LAST:event_newBtnActionPerformed
+
+    private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
+        if (!ExpenseFrame.isInstanceAlive()) {
+            int expenseID = parseExpenseID();
+            if (expenseID != NIL) {
+                new ExpenseFrame(this, c, expenseID);
+            }
+        }
+    }//GEN-LAST:event_updateBtnActionPerformed
+
+    private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
+        int expenseID = parseExpenseID();
+        if (expenseID != NIL && MesDial.deleteQuestion(this) == JOptionPane.YES_OPTION) {
+            Expense expense = new Expense(expenseID);
+            expenseDL = new ExpenseDL(c, expense);
+            try {
+                expenseDL.deleteEntity();
+                loadExpenseList();
+                MesDial.saveSuccess(this);
+            } catch (SQLException ex) {
+                MesDial.conError(this);
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_deleteBtnActionPerformed
+
+    private void quitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitBtnActionPerformed
+        shutdown();
+    }//GEN-LAST:event_quitBtnActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -220,11 +358,11 @@ public class MainFrame extends GUI {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JList monthList;
     private javax.swing.JButton newBtn;
     private javax.swing.JButton quitBtn;
     private javax.swing.JLabel statusL;
+    private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JButton updateBtn;
     private javax.swing.JList weekList;
     // End of variables declaration//GEN-END:variables

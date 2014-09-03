@@ -37,13 +37,46 @@ public class ExpenseDL extends DataLayer {
 
         ResultSet expenseR = ps.executeQuery();
 
-        if (resultSetToEntity(expenseR).size() > 0) {
-            e = resultSetToEntity(expenseR).get(0);
+        entities = resultSetToEntity(expenseR);
+        
+        if (entities.size() > 0) {
+            e = entities.get(0);
         } else {
             throw new SQLException();
         }
 
         return e;
+    }
+
+    /**
+     * Fetches the items according to a given interval
+     *
+     * @param anInterval
+     * @return
+     * @throws SQLException
+     */
+    public ArrayList<Entity> fetchIntervalItems(String anInterval) throws SQLException {
+        entities = new ArrayList();
+
+        String whereS = "";
+        if (anInterval.equals("day")) {
+            whereS = "DATE(DateCreated) = CURDATE() ";
+        } else if (anInterval.equals("week")) {
+            whereS = "WEEKOFYEAR(DateCreated) = WEEKOFYEAR(NOW()) AND DateCreated > CURRENT_TIMESTAMP - INTERVAL 2 WEEK ";
+        } else if (anInterval.equals("month")) {
+            whereS = "MONTHNAME(DateCreated) = MONTHNAME(NOW()) AND DateCreated > CURRENT_TIMESTAMP - INTERVAL 1 MONTH ";
+        }
+
+        String query = ""
+                + "SELECT * "
+                + "FROM expense "
+                + "WHERE " + whereS
+                + "ORDER BY DateCreated ASC ";
+
+        ResultSet entityR = c.sendQuery(query);
+        entities = resultSetToEntity(entityR);
+
+        return entities;
     }
 
     @Override

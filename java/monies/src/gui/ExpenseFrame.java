@@ -44,6 +44,7 @@ public class ExpenseFrame extends GUI {
         if (existing) {
             loadExpense();
         } else {
+            dateF.setText(dateFormat.format(new java.util.Date()));
             statusL.setText("New Expense");
         }
 
@@ -55,7 +56,7 @@ public class ExpenseFrame extends GUI {
      * Loads an expense on the form
      */
     private void loadExpense() {
-        expense = new Expense(super.id);
+        expense = new Expense(id);
         expenseDL = new ExpenseDL(c, expense);
 
         //trying to fetch the expense
@@ -94,10 +95,14 @@ public class ExpenseFrame extends GUI {
             expenseDL = new ExpenseDL(c, expense);
             try {
                 if (!existing) {
-                    expenseDL.insertEntity();
+                    id = expenseDL.insertEntity();
+                    existing = true;
+                    statusL.setText("Expense Saved Successfully");
+                    expenseIDF.setText(String.valueOf(id));
                 } else {
                     expenseDL.updateEntity();
                 }
+                ((MainFrame) pFrame).loadExpenseList();
                 MesDial.saveSuccess(this);
             } catch (SQLException ex) {
                 MesDial.conError(this);
@@ -245,12 +250,12 @@ public class ExpenseFrame extends GUI {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(amountF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addComponent(dateF, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dateF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                .addComponent(descriptionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -277,6 +282,11 @@ public class ExpenseFrame extends GUI {
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         backButton.setText("<Back");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backButtonActionPerformed(evt);
+            }
+        });
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -336,6 +346,11 @@ public class ExpenseFrame extends GUI {
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         saveExpense();
     }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        instanceAlive = false;
+        shutdown();
+    }//GEN-LAST:event_backButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField amountF;
