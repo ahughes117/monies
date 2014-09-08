@@ -104,6 +104,7 @@ public class ExpenseFrame extends GUI {
                 }
                 ((MainFrame) pFrame).loadExpenseList();
                 MesDial.saveSuccess(this);
+                shutdown();
             } catch (SQLException ex) {
                 MesDial.conError(this);
                 Logger.getLogger(ExpenseFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -197,7 +198,9 @@ public class ExpenseFrame extends GUI {
         descriptionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Description"));
 
         descriptionArea.setColumns(20);
+        descriptionArea.setLineWrap(true);
         descriptionArea.setRows(5);
+        descriptionArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(descriptionArea);
 
         javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
