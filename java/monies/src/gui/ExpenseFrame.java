@@ -104,6 +104,7 @@ public class ExpenseFrame extends GUI {
                 }
                 ((MainFrame) pFrame).loadExpenseList();
                 MesDial.saveSuccess(this);
+                instanceAlive = false;
                 shutdown();
             } catch (SQLException ex) {
                 MesDial.conError(this);
